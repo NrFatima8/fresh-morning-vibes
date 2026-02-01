@@ -61,7 +61,7 @@ export const LocationSection = () => {
                   </div>
                   <div>
                     <p className="font-semibold text-foreground">Contact</p>
-                    <p className="text-muted-foreground">+92 XXX XXXXXXX</p>
+                    <p className="text-muted-foreground">+92 3287873807</p>
                   </div>
                 </CardContent>
               </Card>
