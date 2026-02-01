@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import emailjs from "@emailjs/browser";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Mail, Phone, Instagram, Music2, Send, CalendarDays, ShoppingBag } from "lucide-react";
+import { Mail, Phone, Instagram, Music2, Send, CalendarDays, ShoppingBag, Loader2 } from "lucide-react";
+
+// EmailJS configuration
+const EMAILJS_SERVICE_ID = "service_2c2xbx6";
+const EMAILJS_TEMPLATE_ID = "template_ehbdmxg";
+const EMAILJS_PUBLIC_KEY = "7K9faMDp_k0BUIKSR";
 
 const orderSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(100, "Name is too long"),
@@ -46,6 +52,7 @@ const timeSlots = [
 export const ContactSection = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"order" | "reservation">("order");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const orderForm = useForm<OrderFormData>({
     resolver: zodResolver(orderSchema),
@@ -62,9 +69,28 @@ export const ContactSection = () => {
     defaultValues: { email: "" },
   });
 
-  const onOrderSubmit = (data: OrderFormData) => {
-    toast.success("Order received! We'll contact you shortly to confirm.");
-    orderForm.reset();
+  const onOrderSubmit = async (data: OrderFormData) => {
+    setIsSubmitting(true);
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          from_name: data.name,
+          from_email: data.email,
+          phone: data.phone,
+          message: data.items,
+        },
+        EMAILJS_PUBLIC_KEY
+      );
+      toast.success("Order received! We'll contact you shortly to confirm.");
+      orderForm.reset();
+    } catch (error) {
+      console.error("EmailJS error:", error);
+      toast.error("Failed to send order. Please try again or call us directly.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const onReservationSubmit = (data: ReservationFormData) => {
@@ -202,9 +228,22 @@ export const ContactSection = () => {
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full bg-terracotta hover:bg-terracotta/90 text-terracotta-foreground rounded-full">
-                        <Send size={18} className="mr-2" />
-                        Submit Order
+                      <Button 
+                        type="submit" 
+                        disabled={isSubmitting}
+                        className="w-full bg-terracotta hover:bg-terracotta/90 text-terracotta-foreground rounded-full"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 size={18} className="mr-2 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send size={18} className="mr-2" />
+                            Submit Order
+                          </>
+                        )}
                       </Button>
                     </form>
                   </Form>
