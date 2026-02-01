@@ -71,7 +71,7 @@ export const Footer = () => {
               </li>
               <li className="flex items-center gap-3 text-primary-foreground/70">
                 <Mail size={18} className="text-fresh" />
-                <span>hello@feelfresh.cafe</span>
+                <span>noorfatima82005@gmail.com</span>
               </li>
             </ul>
           </motion.div>
